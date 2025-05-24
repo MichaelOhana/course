@@ -1,0 +1,82 @@
+<h2 class="text-3xl font-bold text-center text-purple-700 mb-6" x-text="practiceSessionTitle">
+    Practice Session</h2>
+
+<div x-show="isLoadingPractice" class="text-center py-10">
+    <p class="text-xl text-gray-600">Loading practice exercises...</p>
+</div>
+
+<div x-show="!isLoadingPractice && currentExercise">
+    <div class="mb-6 p-4 border border-purple-200 rounded-lg bg-purple-50">
+        <p class="text-sm text-purple-600 mb-2">
+            Question <span x-text="currentExerciseIndex + 1"></span> of <span x-text="practiceExercises.length"></span>
+        </p>
+        <!-- Fill-in-the-Blank Exercise -->
+        <div x-show="currentExercise.type === 'fill-blank'">
+            <p class="text-lg text-gray-700 mb-3">Complete the sentence:</p>
+            <p class="text-xl font-semibold text-gray-800 bg-white p-3 rounded-md shadow-sm"
+                x-html="formatSentenceWithBlankUtil(currentExercise.questionText, currentExercise.correctAnswerTerm.length)">
+            </p>
+        </div>
+        <!-- Fill-in-Conversation Exercise -->
+        <div x-show="currentExercise.type === 'fill-conversation'" class="space-y-2">
+            <p class="text-lg text-gray-700 mb-3">Complete the conversation:</p>
+            <template x-for="(line, index) in currentExercise.questionText" :key="index">
+                <div class="p-2 rounded-md"
+                    :class="line.speaker === 'A' ? 'bg-blue-50 text-blue-800' : 'bg-green-50 text-green-800'">
+                    <span class="font-semibold" x-text="line.speaker + ': '"></span>
+                    <span
+                        x-html="formatSentenceWithBlankUtil(line.line, currentExercise.correctAnswerTerm.length)"></span>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <div class="mb-6">
+        <p class="text-lg font-medium text-gray-700 mb-3">Choose the correct word:</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <template x-for="option in currentExercise.options" :key="option">
+                <button @click="selectAnswer(option)" :disabled="feedbackMessage.text !== ''"
+                    class="w-full p-3 text-left rounded-md border transition-all duration-150 ease-in-out" :class="{
+                        'bg-indigo-500 text-white hover:bg-indigo-600 shadow-md': userAnswer === option && !feedbackMessage.text,
+                        'bg-gray-100 hover:bg-gray-200 text-gray-700': userAnswer !== option || feedbackMessage.text,
+                        'opacity-50 cursor-not-allowed': feedbackMessage.text !== '' && userAnswer !== option,
+                        'ring-2 ring-green-500 bg-green-100 text-green-800': feedbackMessage.type === 'success' && option === currentExercise.correctAnswerTerm,
+                        'ring-2 ring-red-500 bg-red-100 text-red-800': feedbackMessage.type === 'error' && option === userAnswer && userAnswer !== currentExercise.correctAnswerTerm
+                    }">
+                    <span x-text="option"></span>
+                </button>
+            </template>
+        </div>
+    </div>
+
+    <div x-show="feedbackMessage.text" class="mt-4 p-3 rounded-md text-center font-medium" :class="{
+                'bg-green-100 text-green-700': feedbackMessage.type === 'success',
+                'bg-orange-100 text-orange-700': feedbackMessage.type === 'error'
+            }">
+        <p x-text="feedbackMessage.text"></p>
+        <p x-show="feedbackMessage.type === 'error'" class="text-sm">The correct answer was:
+            <strong x-text="currentExercise.correctAnswerTerm"></strong>
+        </p>
+    </div>
+
+    <div class="mt-8 text-center">
+        <button x-show="userAnswer && feedbackMessage.text" @click="nextExercise()"
+            class="px-8 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-colors shadow-md">
+            Next &rarr;
+        </button>
+        <button x-show="!userAnswer && !feedbackMessage.text" @click="submitAnswer()"
+            class="px-8 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-colors shadow-md opacity-50 cursor-not-allowed"
+            :disabled="!userAnswer" :class="{'opacity-100 cursor-pointer': userAnswer}">
+            Check Answer
+        </button>
+    </div>
+</div>
+
+<div x-show="!isLoadingPractice && !currentExercise && isPracticeActive" class="text-center py-10">
+    <p class="text-2xl font-semibold text-green-600 mb-4" x-text="practiceCompletionMessage">
+    </p>
+    <button @click="finishPracticeSession()"
+        class="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+        Back to Menu
+    </button>
+</div>

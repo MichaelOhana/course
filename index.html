@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Learning App</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Add any other head elements like favicons, etc. -->
+</head>
+
+<body x-data="appState" x-cloak class="bg-gray-50 text-gray-800">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Left Navigation Panel -->
+        <nav id="left-nav-panel" class="w-64 lg:w-1/4 bg-white p-4 overflow-y-auto shadow-lg flex-shrink-0">
+            <h2 class="text-2xl font-bold text-purple-700 mb-5 border-b pb-2">Word List</h2>
+            <ul id="word-navigation-list" class="space-y-1">
+                <!-- Word items will be dynamically injected here by js/main.js -->
+                <!-- Example of a loading state for nav -->
+                <li x-show="isLoadingWords" class="text-gray-500">Loading words...</li>
+            </ul>
+            <button @click="initiatePractice(allWordsFlat)"
+                class="mt-6 w-full px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-colors shadow-md">
+                Practice All Words
+            </button>
+        </nav>
+
+        <!-- Right Content Panel -->
+        <main id="app-content" class="flex-grow p-6 overflow-y-auto bg-purple-50">
+            <!-- Views (word-detail.html, practice.html) will be loaded here -->
+            <div x-show="!currentViewLoaded" class="text-center py-20">
+                <h1 class="text-3xl font-bold text-purple-700 mb-4">Welcome!</h1>
+                <p class="text-lg text-gray-600">Select a word from the menu or start a practice session.</p>
+            </div>
+            <!-- Container for loaded views -->
+            <div id="view-container">
+                <!-- Content from practice.html or word-detail.html goes here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/utils.js"></script>
+    <script type="module" src="js/wordService.js"></script>
+    <script type="module" src="js/viewLoader.js"></script>
+    <script type="module" src="js/main.js"></script>
+
+    <script>
+        // Simple inline script to check when alpine:init fires
+        document.addEventListener('alpine:init', () => {
+            console.log('ALPINE:INIT FIRED (from inline script in index.html)');
+        });
+    </script>
+</body>
+
+</html>

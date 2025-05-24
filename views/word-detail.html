@@ -1,0 +1,240 @@
+<button @click="goBackToWordList()"
+    class="mb-4 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors">
+    &larr; Back to Word List
+</button>
+
+<div x-show="isLoadingWordDetails" class="text-center p-6">
+    <p class="text-lg text-gray-500">Loading word details...</p>
+</div>
+
+<div x-show="false" class="space-y-6">
+    <!-- Word Term and Basic Info -->
+    <div class="p-6 bg-white rounded-lg shadow-lg">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-4xl font-bold text-indigo-700" x-text="selectedWordDetails.term"></h2>
+            <button @click="playAudio(selectedWordDetails.audio_data)" x-show="selectedWordDetails.audio_data"
+                class="p-2 rounded-full hover:bg-indigo-100 text-indigo-600 transition-colors" title="Play audio">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM12.293 7.293a1 1 0 011.414 0L15 8.586l1.293-1.293a1 1 0 111.414 1.414L16.414 10l1.293 1.293a1 1 0 01-1.414 1.414L15 11.414l-1.293 1.293a1 1 0 01-1.414-1.414L13.586 10l-1.293-1.293a1 1 0 010-1.414z"
+                        clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>
+        <p class="text-xl text-gray-600 mb-1" x-show="selectedWordDetails.translation">
+            <strong class="font-semibold">Translation (<span x-text="targetLanguageCode"></span>):</strong> <span
+                x-text="selectedWordDetails.translation"></span>
+        </p>
+        <p class="text-gray-500 italic" x-show="!selectedWordDetails.translation && selectedWordId">
+            No translation available for <span x-text="targetLanguageCode"></span>.</p>
+
+        <p class="text-md text-gray-700 mt-3" x-show="selectedWordDetails.definition">
+            <strong class="font-semibold">Definition:</strong> <span x-text="selectedWordDetails.definition"></span>
+        </p>
+        <p class="text-gray-500 italic" x-show="!selectedWordDetails.definition && selectedWordId">
+            No definition available.</p>
+    </div>
+
+    <!-- Example Sentences -->
+    <div x-show="selectedWordExamples.length > 0" class="p-6 bg-white rounded-lg shadow-lg">
+        <h3 class="text-2xl font-semibold text-gray-800 mb-4">Example Sentences</h3>
+        <ul class="space-y-3">
+            <template x-for="(example, index) in selectedWordExamples" :key="index">
+                <li class="p-3 border rounded-md bg-gray-50">
+                    <div class="flex items-center justify-between">
+                        <p class="text-gray-700" x-text="example.text"></p>
+                        <button @click="playAudio(example.audio_data)" x-show="example.audio_data"
+                            class="ml-2 p-1 rounded-full hover:bg-indigo-100 text-indigo-500 transition-colors"
+                            title="Play audio">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.5 8.5a4.5 4.5 0 100 3h-1a3.5 3.5 0 110-3h1z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                </li>
+            </template>
+        </ul>
+    </div>
+    <p x-show="selectedWordId && !isLoadingWordDetails && selectedWordExamples.length === 0"
+        class="text-gray-500 italic p-4 text-center">No example sentences available for this word.
+    </p>
+
+    <!-- Example Conversations -->
+    <div x-show="selectedWordConversations.length > 0" class="p-6 bg-white rounded-lg shadow-lg">
+        <h3 class="text-2xl font-semibold text-gray-800 mb-4">Example Conversations</h3>
+        <ul class="space-y-4">
+            <template x-for="(convo, index) in selectedWordConversations" :key="index">
+                <li class="p-3 border rounded-md bg-gray-50">
+                    <div class="flex items-start">
+                        <span class="font-semibold text-purple-600 mr-2" x-text="convo.speaker_label + ':'"></span>
+                        <div class="flex-grow">
+                            <p class="text-gray-700" x-text="convo.text"></p>
+                        </div>
+                        <button @click="playAudio(convo.audio_data)" x-show="convo.audio_data"
+                            class="ml-2 p-1 rounded-full hover:bg-purple-100 text-purple-500 transition-colors flex-shrink-0"
+                            title="Play audio">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.5 8.5a4.5 4.5 0 100 3h-1a3.5 3.5 0 110-3h1z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                </li>
+            </template>
+        </ul>
+    </div>
+    <p x-show="selectedWordId && !isLoadingWordDetails && selectedWordConversations.length === 0"
+        class="text-gray-500 italic p-4 text-center">No example conversations available for this
+        word.</p>
+
+    <!-- YouTube Clips -->
+    <div x-show="selectedWordClips.length > 0" class="p-6 bg-white rounded-lg shadow-lg">
+        <h3 class="text-2xl font-semibold text-gray-800 mb-4">YouTube Clips</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <template x-for="(clip, index) in selectedWordClips" :key="index">
+                <div class="aspect-w-16 aspect-h-9">
+                    <iframe class="rounded-md shadow"
+                        :src="`https://www.youtube.com/embed/${getYouTubeVideoId(clip.youtube_url)}?start=${clip.start_sec}`"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </template>
+        </div>
+        <p x-show="selectedWordId && !isLoadingWordDetails && selectedWordClips.length === 0"
+            class="text-gray-500 italic p-4 text-center">No YouTube clips available for this word.
+        </p>
+    </div>
+</div>
+
+<p x-show="!isLoadingWordDetails && !currentWord && !error" class="text-gray-500 font-semibold p-4 text-center">Select a
+    word to see details.</p>
+<p x-show="!isLoadingWordDetails && !currentWord && error" class="text-red-500 font-semibold p-4 text-center"
+    x-text="error || 'Could not load details for the selected word.'"></p>
+
+<!-- This content is dynamically loaded into #view-container -->
+<!-- It will use the 'currentWord' property from the global appState -->
+
+<div x-show="currentWord && !isLoadingWordDetails" class="bg-white p-6 rounded-lg shadow-md space-y-6">
+    <div class="flex items-center justify-between mb-3">
+        <h2 class="text-4xl font-bold text-purple-800" x-text="currentWord?.term"></h2>
+        <button @click="playAudio(currentWord?.audioSrc)" x-show="currentWord?.audioSrc"
+            class="p-2 rounded-full hover:bg-indigo-100 text-indigo-600 transition-colors" title="Play term audio">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd"
+                    d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM12.293 7.293a1 1 0 011.414 0L15 8.586l1.293-1.293a1 1 0 111.414 1.414L16.414 10l1.293 1.293a1 1 0 01-1.414 1.414L15 11.414l-1.293 1.293a1 1 0 01-1.414-1.414L13.586 10l-1.293-1.293a1 1 0 010-1.414z"
+                    clip-rule="evenodd" />
+            </svg>
+        </button>
+    </div>
+
+    <p class="text-2xl text-gray-700" x-show="currentWord?.translation" x-text="currentWord?.translation"></p>
+    <p class="text-gray-500 italic" x-show="currentWord && !currentWord?.translation">No translation available.</p>
+
+    <div x-show="currentWord?.definition" class="mt-3">
+        <h3 class="text-lg font-semibold text-purple-700">Definition:</h3>
+        <p class="text-gray-700" x-text="currentWord?.definition"></p>
+    </div>
+    <p class="text-gray-500 italic" x-show="currentWord && !currentWord?.definition">No definition available.</p>
+
+    <div x-show="currentWord?.pronunciation" class="mb-4">
+        <h3 class="text-lg font-semibold text-purple-700">Pronunciation:</h3>
+        <p class="text-gray-600" x-text="currentWord?.pronunciation"></p>
+    </div>
+
+    <div x-show="currentWord?.exampleSentences && currentWord.exampleSentences.length > 0" class="mb-5">
+        <h3 class="text-xl font-semibold text-purple-700 mb-2">Example Sentences</h3>
+        <ul class="space-y-3">
+            <template x-for="(sentence, index) in currentWord.exampleSentences" :key="index">
+                <li class="p-3 bg-purple-50 rounded-md border border-purple-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-800" x-text="sentence.english"></p>
+                            <p class="text-purple-600 text-sm" x-show="sentence.hebrew" x-text="sentence.hebrew"></p>
+                        </div>
+                        <button @click="playAudio(sentence.audioSrc)" x-show="sentence.audioSrc"
+                            class="ml-2 p-1 rounded-full hover:bg-indigo-100 text-indigo-500 transition-colors flex-shrink-0"
+                            title="Play sentence audio">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.5 8.5a4.5 4.5 0 100 3h-1a3.5 3.5 0 110-3h1z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                </li>
+            </template>
+        </ul>
+    </div>
+    <p x-show="currentWord && (!currentWord.exampleSentences || currentWord.exampleSentences.length === 0)"
+        class="text-gray-500 italic p-4 text-center">No example sentences available for this word.
+    </p>
+
+    <div x-show="currentWord?.conversation && currentWord.conversation.length > 0" class="mb-5">
+        <h3 class="text-xl font-semibold text-purple-700 mb-2">Conversation</h3>
+        <div class="space-y-2">
+            <template x-for="(convoBlock, convoIndex) in currentWord.conversation" :key="convoIndex">
+                <div class="p-3 bg-gray-50 rounded-md border border-gray-200">
+                    <template x-for="(line, lineIndex) in convoBlock.lines" :key="lineIndex">
+                        <div class="mb-1 p-2 rounded-md flex items-center justify-between" :class="{
+                                'bg-blue-100 text-blue-800 text-left': line.speaker === 'A', 
+                                'bg-green-100 text-green-800 text-right': line.speaker === 'B',
+                                'bg-gray-100 text-gray-800': line.speaker !== 'A' && line.speaker !== 'B'
+                            }">
+                            <div>
+                                <span class="font-semibold" x-text="line.speaker + ': '"></span>
+                                <span x-text="line.line"></span>
+                                <p class="text-xs italic text-gray-500 pl-2" x-show="line.translatedLine"
+                                    x-text="line.translatedLine"></p>
+                            </div>
+                            <button @click="playAudio(line.audioSrc)" x-show="line.audioSrc"
+                                class="ml-2 p-1 rounded-full hover:bg-purple-100 text-purple-500 transition-colors flex-shrink-0"
+                                title="Play line audio">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.5 8.5a4.5 4.5 0 100 3h-1a3.5 3.5 0 110-3h1z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </div>
+    <p x-show="currentWord && (!currentWord.conversation || currentWord.conversation.length === 0)"
+        class="text-gray-500 italic p-4 text-center">No example conversations available for this word.
+    </p>
+
+    <div x-show="currentWord?.clips && currentWord.clips.length > 0" class="p-6 bg-white rounded-lg shadow-lg">
+        <h3 class="text-2xl font-semibold text-gray-800 mb-4">YouTube Clips</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <template x-for="(clip, index) in currentWord.clips" :key="clip.id || index">
+                <div class="aspect-w-16 aspect-h-9">
+                    <iframe class="rounded-md shadow"
+                        :src="`https://www.youtube.com/embed/${getYouTubeVideoId(clip.youtube_url)}?start=${clip.start_sec}`"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </template>
+        </div>
+    </div>
+    <p x-show="currentWord && (!currentWord.clips || currentWord.clips.length === 0)"
+        class="text-gray-500 italic p-4 text-center">No YouTube clips available for this word.
+    </p>
+
+    <div x-show="currentWord?.notes" class="mt-5 pt-4 border-t border-gray-200">
+        <h3 class="text-lg font-semibold text-purple-700">Notes:</h3>
+        <p class="text-gray-600 whitespace-pre-line" x-text="currentWord?.notes"></p>
+    </div>
+</div>

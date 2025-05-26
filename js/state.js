@@ -17,6 +17,12 @@ export function getInitialState() {
         wordsInSelectedModule: [],
         selectedWordId: null,
 
+        // Target language configuration
+        targetLanguageCode: 'Spanish', // Default to English
+
+        // Current word for the detail view
+        currentWord: null,
+
         isLoadingWordDetails: false,
         selectedWordDetails: {
             term: null,

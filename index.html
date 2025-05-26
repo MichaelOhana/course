@@ -18,11 +18,11 @@
     <div class="flex h-screen overflow-hidden">
         <!-- Left Navigation Panel -->
         <nav id="left-nav-panel" class="w-64 lg:w-1/4 bg-white p-4 overflow-y-auto shadow-lg flex-shrink-0">
-            <h2 class="text-2xl font-bold text-purple-700 mb-5 border-b pb-2">Word List</h2>
+            <h2 class="text-2xl font-bold text-purple-700 mb-5 border-b pb-2">Course Modules</h2>
             <ul id="word-navigation-list" class="space-y-1">
-                <!-- Word items will be dynamically populated here by js/main.js -->
+                <!-- Module items will be dynamically populated here by js/main.js -->
                 <li x-show="isLoading" class="text-gray-500">Loading course content...</li>
-                <li x-show="!isLoading && allWordsFlat.length === 0" class="text-gray-500">No words available.</li>
+                <li x-show="!isLoading && allWordsFlat.length === 0" class="text-gray-500">No modules available.</li>
             </ul>
             <button @click="initiatePractice(allWordsFlat)" x-show="!isLoading && allWordsFlat.length > 0"
                 class="mt-6 w-full px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-colors shadow-md">

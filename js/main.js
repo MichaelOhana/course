@@ -110,11 +110,19 @@ function createAppStateComponent() {
         // ---- navigation and view management ----
         async loadAllWordsForNavigation() {
             try {
-                // Load all words for the navigation panel
-                const allWordsQuery = 'SELECT * FROM words ORDER BY module_id, id';
+                // Load all words with their module assignments for the navigation panel
+                const allWordsQuery = `
+                    SELECT w.*, m.id as module_id, m.name as module_name, m.description as module_description
+                    FROM words w
+                    JOIN word_module_assignments wma ON w.id = wma.word_id
+                    JOIN modules m ON wma.module_id = m.id
+                    ORDER BY m.name, w.term
+                `;
                 this.allWordsFlat = this.executeQuery(allWordsQuery) ?? [];
 
-                // If modules weren't loaded properly, try to extract them from words
+                console.log('[appState] Loaded words with modules:', this.allWordsFlat.length);
+
+                // If we have words but no modules loaded yet, extract them from the word data
                 if ((!this.modules || this.modules.length === 0) && this.allWordsFlat.length > 0) {
                     console.log('[appState] Extracting modules from words data...');
                     const moduleMap = new Map();
@@ -123,7 +131,7 @@ function createAppStateComponent() {
                             moduleMap.set(word.module_id, {
                                 id: word.module_id,
                                 name: word.module_name || `Module ${word.module_id}`,
-                                description: `Module containing ${word.module_id} words`
+                                description: word.module_description || `Module containing words`
                             });
                         }
                     });
@@ -136,6 +144,103 @@ function createAppStateComponent() {
             } catch (err) {
                 console.error('[appState] loadAllWordsForNavigation() error:', err);
                 this.error = 'Failed to load words for navigation';
+
+                // Fallback: try to show modules without words if modules are loaded
+                if (this.modules && this.modules.length > 0) {
+                    console.log('[appState] Fallback: showing modules without words');
+                    this.populateModulesOnly();
+                }
+            }
+        },
+
+        populateModulesOnly() {
+            const navList = document.getElementById('word-navigation-list');
+            if (!navList) {
+                console.error('[appState] Navigation list element not found');
+                return;
+            }
+
+            console.log('[appState] Populating navigation with modules only');
+
+            // Clear existing content except loading indicator
+            const loadingIndicator = navList.querySelector('[x-show="isLoading"]');
+            navList.innerHTML = '';
+            if (loadingIndicator) navList.appendChild(loadingIndicator);
+
+            // Create module items
+            this.modules.forEach(module => {
+                const moduleHeader = document.createElement('li');
+                moduleHeader.className = 'font-semibold text-purple-700 mt-4 mb-2 border border-purple-200 rounded-lg p-3 cursor-pointer hover:bg-purple-50 transition-colors';
+                moduleHeader.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="text-sm font-bold">${module.name}</div>
+                            ${module.description ? `<div class="text-xs text-purple-600 font-normal mt-1">${module.description}</div>` : ''}
+                        </div>
+                        <span class="module-toggle text-purple-500">▼</span>
+                    </div>
+                `;
+
+                // Create words container (initially hidden)
+                const wordsContainer = document.createElement('div');
+                wordsContainer.className = 'module-words hidden mt-2 ml-4 space-y-1';
+                wordsContainer.setAttribute('data-module-id', module.id);
+
+                // Add click handler to module header for expand/collapse and load words
+                moduleHeader.addEventListener('click', async () => {
+                    const toggle = moduleHeader.querySelector('.module-toggle');
+                    const isExpanded = !wordsContainer.classList.contains('hidden');
+
+                    if (isExpanded) {
+                        wordsContainer.classList.add('hidden');
+                        toggle.textContent = '▼';
+                    } else {
+                        // Load words for this module if not already loaded
+                        if (wordsContainer.children.length === 0) {
+                            await this.loadWordsForModuleNavigation(module.id, wordsContainer);
+                        }
+                        wordsContainer.classList.remove('hidden');
+                        toggle.textContent = '▲';
+                        // Also select this module
+                        this.selectModule(module.id);
+                    }
+                });
+
+                navList.appendChild(moduleHeader);
+                navList.appendChild(wordsContainer);
+            });
+
+            console.log('[appState] Navigation populated with modules only');
+        },
+
+        async loadWordsForModuleNavigation(moduleId, container) {
+            try {
+                const query = `
+                    SELECT w.id, w.term
+                    FROM words w
+                    JOIN word_module_assignments wma ON w.id = wma.word_id
+                    WHERE wma.module_id = ?
+                    ORDER BY w.term
+                `;
+                const words = this.executeQuery(query, [moduleId]) || [];
+
+                // Clear container and add words
+                container.innerHTML = '';
+                words.forEach(word => {
+                    const wordItem = document.createElement('div');
+                    wordItem.className = 'cursor-pointer p-2 rounded hover:bg-purple-100 transition-colors text-sm border-l-2 border-purple-200 pl-3';
+                    wordItem.textContent = word.term || 'Unknown word';
+                    wordItem.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.selectWordFromNav(word.id);
+                    });
+                    container.appendChild(wordItem);
+                });
+
+                console.log(`[appState] Loaded ${words.length} words for module ${moduleId}`);
+            } catch (err) {
+                console.error(`[appState] Error loading words for module ${moduleId}:`, err);
+                container.innerHTML = '<div class="text-red-500 text-xs p-2">Error loading words</div>';
             }
         },
 
@@ -170,25 +275,60 @@ function createAppStateComponent() {
 
             console.log('[appState] Words grouped by module:', wordsByModule);
 
-            // Create navigation items
+            // Create navigation items with collapsible modules
             Object.keys(wordsByModule).forEach(moduleId => {
                 const module = this.modules.find(m => m.id == moduleId);
                 const moduleName = module ? module.name : `Module ${moduleId}`;
+                const moduleDescription = module ? module.description : '';
 
-                // Create module header
+                // Create module header (clickable to expand/collapse)
                 const moduleHeader = document.createElement('li');
-                moduleHeader.className = 'font-semibold text-purple-600 mt-4 mb-2 border-b border-purple-200 pb-1';
-                moduleHeader.textContent = moduleName;
-                navList.appendChild(moduleHeader);
+                moduleHeader.className = 'font-semibold text-purple-700 mt-4 mb-2 border border-purple-200 rounded-lg p-3 cursor-pointer hover:bg-purple-50 transition-colors';
+                moduleHeader.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="text-sm font-bold">${moduleName}</div>
+                            ${moduleDescription ? `<div class="text-xs text-purple-600 font-normal mt-1">${moduleDescription}</div>` : ''}
+                        </div>
+                        <span class="module-toggle text-purple-500">▼</span>
+                    </div>
+                `;
 
-                // Create word items for this module
+                // Create words container (initially hidden)
+                const wordsContainer = document.createElement('div');
+                wordsContainer.className = 'module-words hidden mt-2 ml-4 space-y-1';
+                wordsContainer.setAttribute('data-module-id', moduleId);
+
+                // Add words to container
                 wordsByModule[moduleId].forEach(word => {
-                    const wordItem = document.createElement('li');
-                    wordItem.className = 'cursor-pointer p-2 rounded hover:bg-purple-100 transition-colors text-sm';
+                    const wordItem = document.createElement('div');
+                    wordItem.className = 'cursor-pointer p-2 rounded hover:bg-purple-100 transition-colors text-sm border-l-2 border-purple-200 pl-3';
                     wordItem.textContent = word.term || 'Unknown word';
-                    wordItem.addEventListener('click', () => this.selectWordFromNav(word.id));
-                    navList.appendChild(wordItem);
+                    wordItem.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.selectWordFromNav(word.id);
+                    });
+                    wordsContainer.appendChild(wordItem);
                 });
+
+                // Add click handler to module header for expand/collapse
+                moduleHeader.addEventListener('click', () => {
+                    const toggle = moduleHeader.querySelector('.module-toggle');
+                    const isExpanded = !wordsContainer.classList.contains('hidden');
+
+                    if (isExpanded) {
+                        wordsContainer.classList.add('hidden');
+                        toggle.textContent = '▼';
+                    } else {
+                        wordsContainer.classList.remove('hidden');
+                        toggle.textContent = '▲';
+                        // Also select this module
+                        this.selectModule(moduleId);
+                    }
+                });
+
+                navList.appendChild(moduleHeader);
+                navList.appendChild(wordsContainer);
             });
 
             console.log('[appState] Navigation populated successfully');
@@ -205,23 +345,18 @@ function createAppStateComponent() {
             this.currentView = 'menu';
             const viewContainer = document.getElementById('view-container');
             if (viewContainer) {
-                // Check if modules are available
-                const moduleCards = this.modules && this.modules.length > 0
-                    ? this.modules.map(module => `
-                        <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer" 
-                             onclick="window.appStateInstance && window.appStateInstance.selectModule(${module.id})">
-                            <h3 class="text-xl font-semibold text-purple-700 mb-2">${module.name || 'Unnamed Module'}</h3>
-                            <p class="text-gray-600">${module.description || 'Click to explore this module'}</p>
-                        </div>
-                    `).join('')
-                    : '<p class="text-gray-500 col-span-full text-center">No modules available or still loading...</p>';
-
                 viewContainer.innerHTML = `
                     <div class="text-center py-20">
                         <h1 class="text-3xl font-bold text-purple-700 mb-4">Language Learning Course</h1>
-                        <p class="text-lg text-gray-600 mb-6">Select a word from the navigation panel to begin learning.</p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
-                            ${moduleCards}
+                        <p class="text-lg text-gray-600 mb-6">Select a module from the navigation panel to begin learning.</p>
+                        <div class="bg-white p-8 rounded-lg shadow-md max-w-2xl mx-auto">
+                            <h2 class="text-xl font-semibold text-purple-600 mb-4">How to Use This Course</h2>
+                            <div class="text-left space-y-3 text-gray-700">
+                                <p>• <strong>Browse Modules:</strong> Click on any module in the left panel to expand and see its words</p>
+                                <p>• <strong>Study Words:</strong> Click on individual words to view detailed information, examples, and audio</p>
+                                <p>• <strong>Practice:</strong> Use the "Practice All Words" button to test your knowledge</p>
+                                <p>• <strong>Track Progress:</strong> Your learning progress is automatically saved as you study</p>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -256,27 +391,129 @@ function createAppStateComponent() {
                 const wordResults = this.executeQuery(wordQuery, [wordId]);
 
                 if (wordResults && wordResults.length > 0) {
-                    this.selectedWordDetails = wordResults[0];
+                    const wordData = wordResults[0];
 
-                    // Load examples
-                    const examplesQuery = 'SELECT * FROM examples WHERE word_id = ?';
-                    this.selectedWordExamples = this.executeQuery(examplesQuery, [wordId]) || [];
+                    // Load word translation
+                    let wordTranslation = null;
+                    try {
+                        const translationQuery = 'SELECT translation FROM words_translations WHERE words_id = ? AND language_code = ?';
+                        const translationResults = this.executeQuery(translationQuery, [wordId, this.targetLanguageCode]);
+                        if (translationResults && translationResults.length > 0) {
+                            wordTranslation = translationResults[0].translation;
+                        }
+                    } catch (err) {
+                        console.warn('[appState] Word translations table not available or error loading translation:', err);
+                    }
 
-                    // Load conversations
-                    const conversationsQuery = 'SELECT * FROM conversations WHERE word_id = ?';
-                    this.selectedWordConversations = this.executeQuery(conversationsQuery, [wordId]) || [];
+                    // Map to currentWord for the view
+                    this.currentWord = {
+                        id: wordData.id,
+                        term: wordData.term,
+                        definition: wordData.definition,
+                        translation: wordTranslation || wordData.translation, // Use translation table first, fallback to words table
+                        pronunciation: wordData.pronunciation,
+                        audioSrc: wordData.audio_data,
+                        exampleSentences: [],
+                        conversation: [],
+                        clips: []
+                    };
+
+                    // Also keep the old format for backward compatibility
+                    this.selectedWordDetails = {
+                        ...wordData,
+                        translation: wordTranslation || wordData.translation
+                    };
+
+                    // Load examples with translations
+                    try {
+                        const examplesQuery = 'SELECT * FROM examples WHERE word_id = ?';
+                        const examples = this.executeQuery(examplesQuery, [wordId]) || [];
+                        this.selectedWordExamples = examples;
+
+                        // Load example translations and map to currentWord format
+                        this.currentWord.exampleSentences = await Promise.all(examples.map(async (example) => {
+                            let exampleTranslation = null;
+                            try {
+                                const exampleTranslationQuery = 'SELECT translation FROM example_translations WHERE example_id = ? AND language_code = ?';
+                                const exampleTranslationResults = this.executeQuery(exampleTranslationQuery, [example.id, this.targetLanguageCode]);
+                                if (exampleTranslationResults && exampleTranslationResults.length > 0) {
+                                    exampleTranslation = exampleTranslationResults[0].translation;
+                                }
+                            } catch (err) {
+                                console.warn('[appState] Example translations table not available:', err);
+                            }
+
+                            return {
+                                english: example.text,
+                                translation: exampleTranslation,
+                                audioSrc: example.audio_data
+                            };
+                        }));
+                    } catch (err) {
+                        console.warn('[appState] Examples table not available or error loading examples:', err);
+                        this.selectedWordExamples = [];
+                        this.currentWord.exampleSentences = [];
+                    }
+
+                    // Load conversations with translations (handle missing table gracefully)
+                    try {
+                        const conversationsQuery = 'SELECT * FROM conversation_lines WHERE word_id = ? ORDER BY line_order';
+                        const conversations = this.executeQuery(conversationsQuery, [wordId]) || [];
+                        this.selectedWordConversations = conversations;
+
+                        // Load conversation translations and map to currentWord format
+                        if (conversations.length > 0) {
+                            const conversationLines = await Promise.all(conversations.map(async (convo) => {
+                                let conversationTranslation = null;
+                                try {
+                                    const convoTranslationQuery = 'SELECT translation FROM conversation_line_translations WHERE conversation_line_id = ? AND language_code = ?';
+                                    const convoTranslationResults = this.executeQuery(convoTranslationQuery, [convo.id, this.targetLanguageCode]);
+                                    if (convoTranslationResults && convoTranslationResults.length > 0) {
+                                        conversationTranslation = convoTranslationResults[0].translation;
+                                    }
+                                } catch (err) {
+                                    console.warn('[appState] Conversation translations table not available:', err);
+                                }
+
+                                return {
+                                    speaker: convo.speaker_label || 'Speaker',
+                                    line: convo.text,
+                                    translatedLine: conversationTranslation,
+                                    audioSrc: convo.audio_data
+                                };
+                            }));
+
+                            this.currentWord.conversation = [{
+                                lines: conversationLines
+                            }];
+                        }
+                    } catch (err) {
+                        console.warn('[appState] Conversations table not available or error loading conversations:', err);
+                        this.selectedWordConversations = [];
+                        this.currentWord.conversation = [];
+                    }
 
                     // Load clips
-                    const clipsQuery = 'SELECT * FROM clips WHERE word_id = ?';
-                    this.selectedWordClips = this.executeQuery(clipsQuery, [wordId]) || [];
+                    try {
+                        const clipsQuery = 'SELECT * FROM clips WHERE word_id = ?';
+                        const clips = this.executeQuery(clipsQuery, [wordId]) || [];
+                        this.selectedWordClips = clips;
+                        this.currentWord.clips = clips;
+                    } catch (err) {
+                        console.warn('[appState] Clips table not available or error loading clips:', err);
+                        this.selectedWordClips = [];
+                        this.currentWord.clips = [];
+                    }
 
                     console.log('[appState] Word details loaded for:', wordId);
                 } else {
                     this.error = `Word with ID ${wordId} not found.`;
+                    this.currentWord = null;
                 }
             } catch (err) {
                 console.error('[appState] loadWordDetailsById() error:', err);
                 this.error = 'Failed to load word details';
+                this.currentWord = null;
             }
         },
 
@@ -290,6 +527,15 @@ function createAppStateComponent() {
             this.selectedWordExamples = [];
             this.selectedWordConversations = [];
             this.selectedWordClips = [];
+            this.currentWord = null;
+        },
+
+        goBackToWordList() {
+            console.log('[appState] goBackToWordList()');
+            this.currentView = 'menu';
+            this.selectedWordId = null;
+            this.currentWord = null;
+            this.showMenuView();
         },
 
         initiatePractice(words) {

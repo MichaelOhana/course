@@ -12,6 +12,7 @@ export function getInitialState() {
         practiceViewHtml: '<p class="text-center text-gray-500">Loading practice view...</p>',
 
         modules: [],
+        allWordsFlat: [],
         selectedModuleId: null,
         wordsInSelectedModule: [],
         selectedWordId: null,

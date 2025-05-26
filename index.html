@@ -6,7 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Language Learning App</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+    <!-- Load our main script first -->
+    <script type="module" src="js/main.js"></script>
+    <!-- Then load Alpine.js with defer to ensure proper initialization -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Add any other head elements like favicons, etc. -->
 </head>
 
@@ -16,11 +20,11 @@
         <nav id="left-nav-panel" class="w-64 lg:w-1/4 bg-white p-4 overflow-y-auto shadow-lg flex-shrink-0">
             <h2 class="text-2xl font-bold text-purple-700 mb-5 border-b pb-2">Word List</h2>
             <ul id="word-navigation-list" class="space-y-1">
-                <!-- Word items will be dynamically injected here by js/main.js -->
-                <!-- Example of a loading state for nav -->
-                <li x-show="isLoadingWords" class="text-gray-500">Loading words...</li>
+                <!-- Word items will be dynamically populated here by js/main.js -->
+                <li x-show="isLoading" class="text-gray-500">Loading course content...</li>
+                <li x-show="!isLoading && allWordsFlat.length === 0" class="text-gray-500">No words available.</li>
             </ul>
-            <button @click="initiatePractice(allWordsFlat)"
+            <button @click="initiatePractice(allWordsFlat)" x-show="!isLoading && allWordsFlat.length > 0"
                 class="mt-6 w-full px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-colors shadow-md">
                 Practice All Words
             </button>
@@ -29,28 +33,48 @@
         <!-- Right Content Panel -->
         <main id="app-content" class="flex-grow p-6 overflow-y-auto bg-purple-50">
             <!-- Views (word-detail.html, practice.html) will be loaded here -->
-            <div x-show="!currentViewLoaded" class="text-center py-20">
-                <h1 class="text-3xl font-bold text-purple-700 mb-4">Welcome!</h1>
-                <p class="text-lg text-gray-600">Select a word from the menu or start a practice session.</p>
+            <div x-show="isLoading" class="text-center py-20">
+                <h1 class="text-3xl font-bold text-purple-700 mb-4">Loading...</h1>
+                <p class="text-lg text-gray-600">Please wait while we load your course content.</p>
             </div>
             <!-- Container for loaded views -->
-            <div id="view-container">
+            <div id="view-container" x-show="!isLoading">
                 <!-- Content from practice.html or word-detail.html goes here -->
             </div>
         </main>
     </div>
 
-    <!-- Scripts -->
-    <script type="module" src="js/config.js"></script>
-    <script type="module" src="js/utils.js"></script>
-    <script type="module" src="js/wordService.js"></script>
-    <script type="module" src="js/viewLoader.js"></script>
-    <script type="module" src="js/main.js"></script>
-
     <script>
-        // Simple inline script to check when alpine:init fires
+        // Debug script to monitor Alpine startup
+        console.log('[index.html] Inline script loaded, Alpine available:', typeof Alpine !== 'undefined');
+
+        // Monitor when Alpine becomes available
+        if (typeof Alpine === 'undefined') {
+            console.log('[index.html] Alpine not yet available, setting up monitoring...');
+            let checkCount = 0;
+            const checkAlpineInterval = setInterval(() => {
+                checkCount++;
+                if (typeof Alpine !== 'undefined') {
+                    console.log('[index.html] Alpine became available after', checkCount * 50, 'ms');
+                    clearInterval(checkAlpineInterval);
+                } else if (checkCount > 100) { // 5 seconds
+                    console.error('[index.html] Alpine still not available after 5 seconds');
+                    clearInterval(checkAlpineInterval);
+                }
+            }, 50);
+        }
+
+        // Monitor DOM ready state
+        console.log('[index.html] DOM ready state:', document.readyState);
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log('[index.html] DOMContentLoaded fired');
+            });
+        }
+
+        // Also monitor when Alpine starts
         document.addEventListener('alpine:init', () => {
-            console.log('ALPINE:INIT FIRED (from inline script in index.html)');
+            console.log('[index.html] Alpine init event detected');
         });
     </script>
 </body>

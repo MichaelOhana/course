@@ -397,10 +397,11 @@ function createAppStateComponent() {
                     let wordTranslation = null;
                     try {
                         const translationQuery = 'SELECT translation FROM words_translations WHERE words_id = ? AND language_code = ?';
-                        const translationResults = this.executeQuery(translationQuery, [wordId, this.targetLanguageCode]);
+                        const translationResults = this.executeQuery(translationQuery, [wordId, CONFIG_TARGET_LANGUAGE_CODE]);
                         if (translationResults && translationResults.length > 0) {
                             wordTranslation = translationResults[0].translation;
                         }
+                        console.log('[appState] Word translation query result:', translationResults, 'for language:', CONFIG_TARGET_LANGUAGE_CODE);
                     } catch (err) {
                         console.warn('[appState] Word translations table not available or error loading translation:', err);
                     }
@@ -415,7 +416,8 @@ function createAppStateComponent() {
                         audioSrc: wordData.audio_data,
                         exampleSentences: [],
                         conversation: [],
-                        clips: []
+                        clips: [],
+                        notes: wordData.notes
                     };
 
                     // Also keep the old format for backward compatibility
@@ -435,7 +437,7 @@ function createAppStateComponent() {
                             let exampleTranslation = null;
                             try {
                                 const exampleTranslationQuery = 'SELECT translation FROM example_translations WHERE example_id = ? AND language_code = ?';
-                                const exampleTranslationResults = this.executeQuery(exampleTranslationQuery, [example.id, this.targetLanguageCode]);
+                                const exampleTranslationResults = this.executeQuery(exampleTranslationQuery, [example.id, CONFIG_TARGET_LANGUAGE_CODE]);
                                 if (exampleTranslationResults && exampleTranslationResults.length > 0) {
                                     exampleTranslation = exampleTranslationResults[0].translation;
                                 }
@@ -457,9 +459,11 @@ function createAppStateComponent() {
 
                     // Load conversations with translations (handle missing table gracefully)
                     try {
-                        const conversationsQuery = 'SELECT * FROM conversation_lines WHERE word_id = ? ORDER BY line_order';
+                        const conversationsQuery = 'SELECT * FROM conversation_lines WHERE word_id = ? ORDER BY id';
                         const conversations = this.executeQuery(conversationsQuery, [wordId]) || [];
                         this.selectedWordConversations = conversations;
+
+                        console.log('[appState] Raw conversation data:', conversations);
 
                         // Load conversation translations and map to currentWord format
                         if (conversations.length > 0) {
@@ -467,7 +471,7 @@ function createAppStateComponent() {
                                 let conversationTranslation = null;
                                 try {
                                     const convoTranslationQuery = 'SELECT translation FROM conversation_line_translations WHERE conversation_line_id = ? AND language_code = ?';
-                                    const convoTranslationResults = this.executeQuery(convoTranslationQuery, [convo.id, this.targetLanguageCode]);
+                                    const convoTranslationResults = this.executeQuery(convoTranslationQuery, [convo.id, CONFIG_TARGET_LANGUAGE_CODE]);
                                     if (convoTranslationResults && convoTranslationResults.length > 0) {
                                         conversationTranslation = convoTranslationResults[0].translation;
                                     }
@@ -479,13 +483,45 @@ function createAppStateComponent() {
                                     speaker: convo.speaker_label || 'Speaker',
                                     line: convo.text,
                                     translatedLine: conversationTranslation,
-                                    audioSrc: convo.audio_data
+                                    audioSrc: convo.audio_data,
+                                    lineOrder: convo.line_order,
+                                    dbId: convo.id
                                 };
                             }));
 
-                            this.currentWord.conversation = [{
-                                lines: conversationLines
-                            }];
+                            // Group conversations by detecting when line_order resets (indicates new conversation)
+                            const conversationGroups = [];
+                            let currentGroup = [];
+                            let lastLineOrder = -1;
+
+                            conversationLines.forEach((line) => {
+                                // If line_order is 0 or goes backwards, start a new conversation group
+                                if (line.lineOrder === 0 || line.lineOrder < lastLineOrder) {
+                                    if (currentGroup.length > 0) {
+                                        conversationGroups.push([...currentGroup]);
+                                        currentGroup = [];
+                                    }
+                                }
+                                currentGroup.push(line);
+                                lastLineOrder = line.lineOrder;
+                            });
+
+                            // Add the last group if it has content
+                            if (currentGroup.length > 0) {
+                                conversationGroups.push(currentGroup);
+                            }
+
+                            // Sort each conversation group by line_order
+                            conversationGroups.forEach(group => {
+                                group.sort((a, b) => (a.lineOrder || 0) - (b.lineOrder || 0));
+                            });
+
+                            console.log('[appState] Grouped conversations:', conversationGroups);
+
+                            // Map to the expected format with separate conversation blocks
+                            this.currentWord.conversation = conversationGroups.map(group => ({
+                                lines: group
+                            }));
                         }
                     } catch (err) {
                         console.warn('[appState] Conversations table not available or error loading conversations:', err);
@@ -505,7 +541,7 @@ function createAppStateComponent() {
                         this.currentWord.clips = [];
                     }
 
-                    console.log('[appState] Word details loaded for:', wordId);
+                    console.log('[appState] Word details loaded for:', wordId, this.currentWord);
                 } else {
                     this.error = `Word with ID ${wordId} not found.`;
                     this.currentWord = null;

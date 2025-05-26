@@ -1,3 +1,5 @@
+import { TARGET_LANGUAGE_CODE } from './config.js';
+
 export function getInitialState() {
     return {
         db: null,
@@ -18,7 +20,7 @@ export function getInitialState() {
         selectedWordId: null,
 
         // Target language configuration
-        targetLanguageCode: 'Spanish', // Default to English
+        targetLanguageCode: TARGET_LANGUAGE_CODE,
 
         // Current word for the detail view
         currentWord: null,

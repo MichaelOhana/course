@@ -46,6 +46,14 @@ export async function startPracticeSession(wordIdsForPractice, title) {
     this.feedbackMessage = { type: '', text: '' };
     this.practiceCompletionMessage = '';
 
+    // Load the practice view HTML template
+    const viewContainer = document.getElementById('view-container');
+    if (viewContainer && this.practiceViewHtml) {
+        viewContainer.innerHTML = this.practiceViewHtml;
+        // Wait for DOM to be ready
+        await new Promise(resolve => setTimeout(resolve, 150));
+    }
+
     console.log("Starting practice session for word IDs:", wordIdsForPractice);
 
     const blankExercisesQuery = `
@@ -84,6 +92,11 @@ export async function startPracticeSession(wordIdsForPractice, title) {
         } catch (e) { console.error("Error parsing distractor_words_json for convo ex:", e, ex.distractor_words_json); }
         try {
             conversationLines = JSON.parse(ex.questionTextJson || '[]');
+            // Normalize the conversation format - handle both "text" and "line" fields
+            conversationLines = conversationLines.map(line => ({
+                speaker: line.speaker || 'Speaker',
+                line: line.line || line.text || 'Missing text'
+            }));
         } catch (e) {
             console.error("Error parsing conversation_json:", e, ex.questionTextJson);
             conversationLines = [{ speaker: "Error", line: "Could not load conversation." }];
@@ -133,7 +146,7 @@ export function submitAnswer() {
     if (this.userAnswer === this.currentExercise.correctAnswerTerm) {
         this.feedbackMessage = { type: 'success', text: 'Good job!' };
     } else {
-        this.feedbackMessage = { type: 'error', text: `Not quite.` };
+        this.feedbackMessage = { type: 'error', text: `The correct answer was ${this.currentExercise.correctAnswerTerm}` };
     }
 }
 

@@ -240,7 +240,7 @@ function createAppStateComponent() {
 
                 // Clear container and add words
                 container.innerHTML = '';
-                words.forEach(word => {
+                words.forEach((word, index) => {
                     const wordItem = document.createElement('div');
                     wordItem.className = 'cursor-pointer p-2 rounded hover:bg-purple-100 transition-colors text-sm border-l-2 border-purple-200 pl-3';
                     wordItem.textContent = word.term || 'Unknown word';
@@ -249,7 +249,70 @@ function createAppStateComponent() {
                         this.selectWordFromNav(word.id);
                     });
                     container.appendChild(wordItem);
+
+                    // Add first practice section after the 5th word (index 4)
+                    if (index === 4 && words.length > 5) {
+                        const practiceFirst5Container = document.createElement('div');
+                        practiceFirst5Container.className = 'my-3 p-3 bg-blue-50 rounded-lg border border-blue-200';
+
+                        const practiceFirst5Button = document.createElement('button');
+                        practiceFirst5Button.className = 'w-full text-left px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors border border-blue-300 font-medium';
+                        practiceFirst5Button.textContent = '📝 Practice First 5 Words';
+                        practiceFirst5Button.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const first5WordIds = words.slice(0, 5).map(w => w.id);
+                            this.startPracticeSession(first5WordIds, `Practice: First 5 Words - ${moduleName}`);
+                        });
+
+                        practiceFirst5Container.appendChild(practiceFirst5Button);
+                        container.appendChild(practiceFirst5Container);
+                    }
                 });
+
+                // Add practice sections at the end of the module
+                const endPracticeContainer = document.createElement('div');
+                endPracticeContainer.className = 'mt-3 space-y-2 border-t border-gray-200 pt-3';
+
+                const moduleWords = words;
+                const wordIds = moduleWords.map(word => word.id);
+                const module = this.modules.find(m => m.id == moduleId);
+                const moduleName = module ? module.name : `Module ${moduleId}`;
+
+                // Second practice section - Practice remaining words (after first 5)
+                if (words.length > 5) {
+                    const practiceRemainingContainer = document.createElement('div');
+                    practiceRemainingContainer.className = 'p-2 bg-gray-50 rounded border border-gray-200';
+
+                    const practiceRemainingButton = document.createElement('button');
+                    practiceRemainingButton.className = 'w-full text-left px-2 py-1 text-xs text-orange-600 rounded hover:bg-orange-50 transition-colors border-0 font-normal';
+                    const remainingCount = words.length - 5;
+                    practiceRemainingButton.textContent = `🎯 Practice Remaining ${remainingCount} Words`;
+                    practiceRemainingButton.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const remainingWordIds = wordIds.slice(5);
+                        this.startPracticeSession(remainingWordIds, `Practice: Remaining ${remainingCount} Words - ${moduleName}`);
+                    });
+
+                    practiceRemainingContainer.appendChild(practiceRemainingButton);
+                    endPracticeContainer.appendChild(practiceRemainingContainer);
+                }
+
+                // Third practice section - Practice all words in module
+                const practiceAllContainer = document.createElement('div');
+                practiceAllContainer.className = 'p-2 bg-gray-50 rounded border border-gray-200';
+
+                const practiceAllButton = document.createElement('button');
+                practiceAllButton.className = 'w-full text-left px-2 py-1 text-xs text-green-600 rounded hover:bg-green-50 transition-colors border-0 font-normal';
+                practiceAllButton.textContent = `📚 Practice All ${words.length} Words`;
+                practiceAllButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.startPracticeSession(wordIds, `Practice: All Words - ${moduleName}`);
+                });
+
+                practiceAllContainer.appendChild(practiceAllButton);
+                endPracticeContainer.appendChild(practiceAllContainer);
+
+                container.appendChild(endPracticeContainer);
 
                 console.log(`[appState] Loaded ${words.length} words for module ${moduleId}`);
             } catch (err) {
@@ -314,7 +377,7 @@ function createAppStateComponent() {
                 wordsContainer.setAttribute('data-module-id', moduleId);
 
                 // Add words to container
-                wordsByModule[moduleId].forEach(word => {
+                wordsByModule[moduleId].forEach((word, index) => {
                     const wordItem = document.createElement('div');
                     wordItem.className = 'cursor-pointer p-2 rounded hover:bg-purple-100 transition-colors text-sm border-l-2 border-purple-200 pl-3';
                     wordItem.textContent = word.term || 'Unknown word';
@@ -323,7 +386,68 @@ function createAppStateComponent() {
                         this.selectWordFromNav(word.id);
                     });
                     wordsContainer.appendChild(wordItem);
+
+                    // Add first practice section after the 5th word (index 4)
+                    if (index === 4 && wordsByModule[moduleId].length > 5) {
+                        const practiceFirst5Container = document.createElement('div');
+                        practiceFirst5Container.className = 'my-2 p-2 bg-gray-50 rounded border border-gray-200';
+
+                        const practiceFirst5Button = document.createElement('button');
+                        practiceFirst5Button.className = 'w-full text-left px-2 py-1 text-xs text-blue-600 rounded hover:bg-blue-50 transition-colors border-0 font-normal';
+                        practiceFirst5Button.textContent = '📝 Practice First 5 Words';
+                        practiceFirst5Button.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const first5WordIds = wordsByModule[moduleId].slice(0, 5).map(w => w.id);
+                            this.startPracticeSession(first5WordIds, `Practice: First 5 Words - ${moduleName}`);
+                        });
+
+                        practiceFirst5Container.appendChild(practiceFirst5Button);
+                        wordsContainer.appendChild(practiceFirst5Container);
+                    }
                 });
+
+                // Add practice sections at the end of the module
+                const endPracticeContainer = document.createElement('div');
+                endPracticeContainer.className = 'mt-3 space-y-2 border-t border-gray-200 pt-3';
+
+                const moduleWords = wordsByModule[moduleId];
+                const wordIds = moduleWords.map(word => word.id);
+
+                // Second practice section - Practice remaining words (after first 5)
+                if (moduleWords.length > 5) {
+                    const practiceRemainingContainer = document.createElement('div');
+                    practiceRemainingContainer.className = 'p-2 bg-gray-50 rounded border border-gray-200';
+
+                    const practiceRemainingButton = document.createElement('button');
+                    practiceRemainingButton.className = 'w-full text-left px-2 py-1 text-xs text-orange-600 rounded hover:bg-orange-50 transition-colors border-0 font-normal';
+                    const remainingCount = moduleWords.length - 5;
+                    practiceRemainingButton.textContent = `🎯 Practice Remaining ${remainingCount} Words`;
+                    practiceRemainingButton.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const remainingWordIds = wordIds.slice(5);
+                        this.startPracticeSession(remainingWordIds, `Practice: Remaining ${remainingCount} Words - ${moduleName}`);
+                    });
+
+                    practiceRemainingContainer.appendChild(practiceRemainingButton);
+                    endPracticeContainer.appendChild(practiceRemainingContainer);
+                }
+
+                // Third practice section - Practice all words in module
+                const practiceAllContainer = document.createElement('div');
+                practiceAllContainer.className = 'p-2 bg-gray-50 rounded border border-gray-200';
+
+                const practiceAllButton = document.createElement('button');
+                practiceAllButton.className = 'w-full text-left px-2 py-1 text-xs text-green-600 rounded hover:bg-green-50 transition-colors border-0 font-normal';
+                practiceAllButton.textContent = `📚 Practice All ${moduleWords.length} Words`;
+                practiceAllButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.startPracticeSession(wordIds, `Practice: All Words - ${moduleName}`);
+                });
+
+                practiceAllContainer.appendChild(practiceAllButton);
+                endPracticeContainer.appendChild(practiceAllContainer);
+
+                wordsContainer.appendChild(endPracticeContainer);
 
                 // Add click handler to module header for expand/collapse
                 moduleHeader.addEventListener('click', () => {
@@ -368,8 +492,11 @@ function createAppStateComponent() {
                             <div class="text-left space-y-3 text-gray-700">
                                 <p>• <strong>Browse Modules:</strong> Click on any module in the left panel to expand and see its words</p>
                                 <p>• <strong>Study Words:</strong> Click on individual words to view detailed information, examples, and audio</p>
-                                <p>• <strong>Practice:</strong> Use the "Practice All Words" button to test your knowledge</p>
-                                <p>• <strong>Track Progress:</strong> Your learning progress is automatically saved as you study</p>
+                                <p>• <strong>Practice Sessions:</strong> Each module has strategically placed practice options:</p>
+                                <p class="ml-6">📝 <strong>Practice First 5 Words</strong> - Appears after the 5th word</p>
+                                <p class="ml-6">🎯 <strong>Practice Remaining Words</strong> - Appears at the end for words 6+</p>
+                                <p class="ml-6">📚 <strong>Practice All Words</strong> - Complete module review at the end</p>
+                                <p>• <strong>Exercise Types:</strong> Practice includes fill-in-the-blank sentences and conversations</p>
                             </div>
                         </div>
                     </div>
@@ -640,12 +767,17 @@ function createAppStateComponent() {
             if (!Array.isArray(words) || words.length === 0) return;
 
             console.log('[appState] initiatePractice()', words.length, 'words');
-            this.currentView = 'practice';
 
-            const viewContainer = document.getElementById('view-container');
-            if (viewContainer) {
-                viewContainer.innerHTML = `<p class="text-center p-5">Practice mode with ${words.length} words</p>`;
+            // Extract word IDs from the words array
+            const wordIds = words.map(word => word.id).filter(id => id);
+
+            if (wordIds.length === 0) {
+                console.warn('[appState] No valid word IDs found for practice');
+                return;
             }
+
+            // Start practice session with all words
+            this.startPracticeSession(wordIds, `Practice: All ${wordIds.length} Words`);
         },
 
         renderYouTubeClips(clips, containerId) {

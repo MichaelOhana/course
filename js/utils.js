@@ -23,10 +23,22 @@ export function getYouTubeVideoId(url) {
     return (match && match[2].length === 11) ? match[2] : url; // Fallback to original if extraction fails
 }
 
-export function formatSentenceWithBlank(sentence, answerLength = 10) {
+export function formatSentenceWithBlank(sentence, answerLength = 10, targetWord = null) {
     if (!sentence) return '';
+
     const blankPlaceholder = `<span class="inline-block border-b-2 border-gray-400 mx-1" style="min-width: ${Math.max(50, answerLength * 8)}px;"></span>`;
-    return sentence.replace(/___BLANK___/g, blankPlaceholder);
+
+    // First, handle existing ___BLANK___ placeholders
+    let result = sentence.replace(/___BLANK___/g, blankPlaceholder);
+
+    // If we have a target word and no ___BLANK___ was found, replace the target word
+    if (targetWord && result === sentence) {
+        // Create a case-insensitive regex to find the target word
+        const wordRegex = new RegExp(`\\b${targetWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+        result = result.replace(wordRegex, blankPlaceholder);
+    }
+
+    return result;
 }
 
 export function renderYouTubeClips(clips, containerId) {

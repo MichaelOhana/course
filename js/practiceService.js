@@ -35,6 +35,10 @@ export async function startPracticeSession(wordIdsForPractice, title) {
         this.currentView = 'menu'; // Go back to menu if no words
         return;
     }
+
+    // Close mobile menu when practice starts
+    this.closeMobileMenu();
+
     this.isPracticeActive = true;
     this.isLoadingPractice = true;
     this.currentView = 'practice';

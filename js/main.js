@@ -23,6 +23,15 @@ function createAppStateComponent() {
         // ---- utility functions ----
         ...utils,
 
+        // ---- mobile menu functions ----
+        toggleMobileMenu() {
+            this.isMobileMenuOpen = !this.isMobileMenuOpen;
+        },
+
+        closeMobileMenu() {
+            this.isMobileMenuOpen = false;
+        },
+
         // ---- service functions ----
         ...wordServiceFunctions,
         ...moduleServiceFunctions,
@@ -475,6 +484,8 @@ function createAppStateComponent() {
         async selectWordFromNav(wordId) {
             console.log('[appState] selectWordFromNav()', wordId);
             this.selectedWordId = wordId;
+            // Close mobile menu when word is selected
+            this.closeMobileMenu();
             await this.showWordDetail(wordId);
         },
 
@@ -484,19 +495,21 @@ function createAppStateComponent() {
             const viewContainer = document.getElementById('view-container');
             if (viewContainer) {
                 viewContainer.innerHTML = `
-                    <div class="text-center py-20">
-                        <h1 class="text-3xl font-bold text-purple-700 mb-4">Language Learning Course</h1>
-                        <p class="text-lg text-gray-600 mb-6">Select a module from the navigation panel to begin learning.</p>
-                        <div class="bg-white p-8 rounded-lg shadow-md max-w-2xl mx-auto">
-                            <h2 class="text-xl font-semibold text-purple-600 mb-4">How to Use This Course</h2>
-                            <div class="text-left space-y-3 text-gray-700">
-                                <p>• <strong>Browse Modules:</strong> Click on any module in the left panel to expand and see its words</p>
-                                <p>• <strong>Study Words:</strong> Click on individual words to view detailed information, examples, and audio</p>
-                                <p>• <strong>Practice Sessions:</strong> Each module has strategically placed practice options:</p>
-                                <p class="ml-6">📝 <strong>Practice First 5 Words</strong> - Appears after the 5th word</p>
-                                <p class="ml-6">🎯 <strong>Practice Remaining Words</strong> - Appears at the end for words 6+</p>
-                                <p class="ml-6">📚 <strong>Practice All Words</strong> - Complete module review at the end</p>
-                                <p>• <strong>Exercise Types:</strong> Practice includes fill-in-the-blank sentences and conversations</p>
+                    <div class="pt-16 md:pt-0">
+                        <div class="text-center py-20">
+                            <h1 class="text-3xl font-bold text-purple-700 mb-4">Language Learning Course</h1>
+                            <p class="text-lg text-gray-600 mb-6">Select a module from the navigation panel to begin learning.</p>
+                            <div class="bg-white p-8 rounded-lg shadow-md max-w-2xl mx-auto">
+                                <h2 class="text-xl font-semibold text-purple-600 mb-4">How to Use This Course</h2>
+                                <div class="text-left space-y-3 text-gray-700">
+                                    <p>• <strong>Browse Modules:</strong> Click on any module in the left panel to expand and see its words</p>
+                                    <p>• <strong>Study Words:</strong> Click on individual words to view detailed information, examples, and audio</p>
+                                    <p>• <strong>Practice Sessions:</strong> Each module has strategically placed practice options:</p>
+                                    <p class="ml-6">📝 <strong>Practice First 5 Words</strong> - Appears after the 5th word</p>
+                                    <p class="ml-6">🎯 <strong>Practice Remaining Words</strong> - Appears at the end for words 6+</p>
+                                    <p class="ml-6">📚 <strong>Practice All Words</strong> - Complete module review at the end</p>
+                                    <p>• <strong>Exercise Types:</strong> Practice includes fill-in-the-blank sentences and conversations</p>
+                                </div>
                             </div>
                         </div>
                     </div>

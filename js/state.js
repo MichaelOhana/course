@@ -8,6 +8,9 @@ export function getInitialState() {
         error: null,
         currentView: 'menu', // 'menu', 'word', 'practice'
 
+        // Mobile menu state
+        isMobileMenuOpen: false,
+
         // HTML content for views
         menuViewHtml: '<p class="text-center text-gray-500">Loading menu view...</p>',
         wordDetailViewHtml: '<p class="text-center text-gray-500">Loading word detail view...</p>',

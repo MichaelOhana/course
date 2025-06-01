@@ -25,11 +25,30 @@ function createAppStateComponent() {
 
         // ---- mobile menu functions ----
         toggleMobileMenu() {
+            console.log('[appState] toggleMobileMenu() called, current state:', this.isMobileMenuOpen);
+            console.log('[appState] toggleMobileMenu() event source check - Alpine component available:', !!this);
             this.isMobileMenuOpen = !this.isMobileMenuOpen;
+            console.log('[appState] toggleMobileMenu() new state:', this.isMobileMenuOpen);
+
+            // Add body class to prevent scrolling when menu is open
+            if (this.isMobileMenuOpen) {
+                document.body.classList.add('overflow-hidden');
+                console.log('[appState] Added overflow-hidden to body');
+            } else {
+                document.body.classList.remove('overflow-hidden');
+                console.log('[appState] Removed overflow-hidden from body');
+            }
         },
 
         closeMobileMenu() {
-            this.isMobileMenuOpen = false;
+            console.log('[appState] closeMobileMenu() called, current state:', this.isMobileMenuOpen);
+            if (this.isMobileMenuOpen) {
+                this.isMobileMenuOpen = false;
+                document.body.classList.remove('overflow-hidden');
+                console.log('[appState] Menu closed, state set to false');
+            } else {
+                console.log('[appState] Menu was already closed');
+            }
         },
 
         // ---- service functions ----
@@ -42,6 +61,14 @@ function createAppStateComponent() {
             console.log('[appState] init()');
             // Make this instance globally available
             window.appStateInstance = this;
+
+            // Set initial menu state based on screen size
+            // On desktop (md and larger), menu should start open
+            // On mobile, menu should start closed
+            const isDesktop = window.innerWidth >= 768; // 768px is the md breakpoint in Tailwind
+            this.isMobileMenuOpen = isDesktop;
+            document.body.classList.remove('overflow-hidden');
+            console.log('[appState] Mobile menu state initialized - Desktop:', isDesktop, 'Menu open:', this.isMobileMenuOpen);
 
             try {
                 // 1. open the client‑side DB
@@ -121,6 +148,24 @@ function createAppStateComponent() {
                     // Check how many clips are in the database
                     const clipsCount = this.executeQuery("SELECT COUNT(*) as count FROM clips") || [];
                     console.log('[appState] Total clips in database:', clipsCount[0]?.count || 0);
+
+                    // Show sample clips data if any exist
+                    if (clipsCount[0]?.count > 0) {
+                        const sampleClips = this.executeQuery("SELECT * FROM clips LIMIT 3") || [];
+                        console.log('[appState] Sample clips:', sampleClips);
+
+                        // Show which words have clips
+                        const wordsWithClips = this.executeQuery(`
+                            SELECT w.id, w.term, COUNT(c.id) as clip_count 
+                            FROM words w 
+                            LEFT JOIN clips c ON w.id = c.word_id 
+                            WHERE c.id IS NOT NULL 
+                            GROUP BY w.id, w.term 
+                            ORDER BY clip_count DESC 
+                            LIMIT 5
+                        `) || [];
+                        console.log('[appState] Words with clips:', wordsWithClips);
+                    }
                 }
 
                 return { tables, hasModulesTable, hasClipsTable };

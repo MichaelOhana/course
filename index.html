@@ -17,19 +17,28 @@
 <body x-data="appState" x-cloak class="bg-gray-50 text-gray-800">
     <div class="flex h-screen overflow-hidden relative">
         <!-- Mobile Menu Button (visible only on mobile) -->
-        <button @click="toggleMobileMenu()"
-            class="fixed top-4 left-4 z-50 md:hidden bg-purple-600 text-white p-2 rounded-lg shadow-lg hover:bg-purple-700 transition-colors"
+        <button @click.stop="toggleMobileMenu()" x-show="!isMobileMenuOpen"
+            class="fixed top-4 left-4 z-50 md:hidden bg-purple-600 text-white p-3 rounded-lg shadow-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
             :class="{ 'bg-purple-700': isMobileMenuOpen }">
             <!-- Hamburger Icon -->
-            <svg x-show="!isMobileMenuOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
-            <!-- Close Icon -->
-            <svg x-show="isMobileMenuOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            <!-- Menu Text -->
+            <span class="text-sm font-medium">Menu</span>
+        </button>
+
+        <!-- Desktop Menu Button (visible only on desktop when menu is closed) -->
+        <button @click.stop="toggleMobileMenu()" x-show="!isMobileMenuOpen"
+            class="fixed top-4 left-4 z-50 hidden md:flex bg-purple-600 text-white p-3 rounded-lg shadow-lg hover:bg-purple-700 transition-colors items-center gap-2">
+            <!-- Hamburger Icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
+            <!-- Menu Text -->
+            <span class="text-sm font-medium">Open Menu</span>
         </button>
 
         <!-- Mobile Menu Overlay (visible only on mobile when menu is open) -->
@@ -41,14 +50,23 @@
         </div>
 
         <!-- Left Navigation Panel -->
-        <nav id="left-nav-panel" class="w-64 lg:w-1/4 bg-white p-4 overflow-y-auto shadow-lg flex-shrink-0 z-40
-                    fixed md:relative inset-y-0 left-0 transform transition-transform duration-300 ease-in-out
-                    md:translate-x-0"
-            :class="{ 'translate-x-0': isMobileMenuOpen, '-translate-x-full': !isMobileMenuOpen }"
+        <nav id="left-nav-panel"
+            class="w-64 lg:w-1/4 bg-white p-4 overflow-y-auto shadow-lg flex-shrink-0 z-40
+                    fixed inset-y-0 left-0 transform transition-transform duration-300 ease-in-out -translate-x-full opacity-0"
+            :class="{ 'translate-x-0 opacity-100': isMobileMenuOpen, '-translate-x-full opacity-0': !isMobileMenuOpen }"
             @click.away="closeMobileMenu()">
             <!-- Close button for mobile (top right of menu) -->
-            <button @click="closeMobileMenu()"
+            <button @click.stop="closeMobileMenu()"
                 class="absolute top-4 right-4 md:hidden text-gray-500 hover:text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <!-- Close button for desktop (top right of menu) -->
+            <button @click.stop="closeMobileMenu()"
+                class="absolute top-4 right-4 hidden md:block text-gray-500 hover:text-gray-700 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -68,7 +86,7 @@
         </nav>
 
         <!-- Right Content Panel -->
-        <main id="app-content" class="flex-grow p-6 overflow-y-auto bg-purple-50 md:ml-0"
+        <main id="app-content" class="flex-grow p-2 md:p-6 overflow-y-auto bg-purple-50 md:ml-0"
             :class="{ 'ml-0': !isMobileMenuOpen }">
             <!-- Views (word-detail.html, practice.html) will be loaded here -->
             <div x-show="isLoading" class="text-center py-20">
@@ -85,6 +103,85 @@
     <script>
         // Debug script to monitor Alpine startup
         console.log('[index.html] Inline script loaded, Alpine available:', typeof Alpine !== 'undefined');
+
+        // Fallback mobile menu toggle for when Alpine isn't working
+        let fallbackMobileMenuOpen = false;
+        let fallbackHandlerAttached = false;
+
+        function fallbackToggleMobileMenu() {
+            console.log('[index.html] Fallback mobile menu toggle called');
+
+            // Double-check that Alpine.js isn't working before proceeding
+            if (typeof Alpine !== 'undefined' && window.appStateInstance) {
+                console.log('[index.html] Alpine.js detected during fallback, aborting fallback execution');
+                return;
+            }
+
+            fallbackMobileMenuOpen = !fallbackMobileMenuOpen;
+
+            const navPanel = document.getElementById('left-nav-panel');
+            const overlay = document.querySelector('.fixed.inset-0.bg-black');
+            const menuButton = document.querySelector('button[class*="fixed"][class*="top-4"][class*="left-4"]');
+
+            if (navPanel) {
+                if (fallbackMobileMenuOpen) {
+                    navPanel.classList.remove('-translate-x-full', 'opacity-0');
+                    navPanel.classList.add('translate-x-0', 'opacity-100');
+                    document.body.classList.add('overflow-hidden');
+                } else {
+                    navPanel.classList.add('-translate-x-full', 'opacity-0');
+                    navPanel.classList.remove('translate-x-0', 'opacity-100');
+                    document.body.classList.remove('overflow-hidden');
+                }
+            }
+
+            if (overlay) {
+                overlay.style.display = fallbackMobileMenuOpen ? 'block' : 'none';
+            }
+
+            // Hide/show the menu button
+            if (menuButton) {
+                menuButton.style.display = fallbackMobileMenuOpen ? 'none' : 'flex';
+            }
+        }
+
+        // Add fallback click handler to the mobile menu button
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('[index.html] DOM loaded, setting up fallback handlers');
+
+            // Wait for Alpine to potentially initialize before setting up fallback
+            setTimeout(() => {
+                // Be more specific - target only the mobile menu button
+                const mobileMenuButton = document.querySelector('button[class*="md:hidden"]');
+                if (mobileMenuButton) {
+                    console.log('[index.html] Found mobile menu button, checking if Alpine.js is working...');
+
+                    // Check if Alpine.js is working by checking multiple indicators
+                    const alpineWorking = (
+                        typeof Alpine !== 'undefined' &&
+                        window.appStateInstance &&
+                        mobileMenuButton._x_dataStack &&
+                        mobileMenuButton._x_dataStack.length > 0
+                    );
+
+                    console.log('[index.html] Alpine.js working:', alpineWorking);
+
+                    if (!alpineWorking) {
+                        console.log('[index.html] Setting up fallback mobile menu handler');
+
+                        // Add a fallback click handler that will work if Alpine isn't working
+                        mobileMenuButton.addEventListener('click', function (e) {
+                            console.log('[index.html] Using fallback mobile menu handler');
+                            e.preventDefault();
+                            e.stopPropagation();
+                            fallbackToggleMobileMenu();
+                        });
+                    } else {
+                        console.log('[index.html] Alpine.js is working, no fallback needed');
+                    }
+                }
+            }, 1000); // Give Alpine.js time to initialize
+        });
 
         // Monitor when Alpine becomes available
         if (typeof Alpine === 'undefined') {

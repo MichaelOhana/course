@@ -813,13 +813,6 @@ function createAppStateComponent() {
             this.currentWord = null;
         },
 
-        goBackToWordList() {
-            console.log('[appState] goBackToWordList()');
-            this.currentView = 'menu';
-            this.selectedWordId = null;
-            this.currentWord = null;
-            this.showMenuView();
-        },
 
         initiatePractice(words) {
             if (!Array.isArray(words) || words.length === 0) return;

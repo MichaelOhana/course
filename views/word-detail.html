@@ -1,7 +1,7 @@
 <div class="pt-16 md:pt-0">
 
     <div x-show="isLoadingWordDetails" class="text-center p-6">
-        <p class="text-lg text-gray-500">Loading word details...</p>
+        <p class="text-lg text-gray-500">Cargando detalles de la palabra...</p>
     </div>
 
     <div x-show="currentWord && !isLoadingWordDetails" class="bg-white p-6 rounded-lg shadow-md space-y-6">
@@ -10,7 +10,7 @@
             <h2 class="text-4xl font-bold text-purple-800" x-text="currentWord?.term"></h2>
             <button @click="playAudio(currentWord?.audioSrc)" x-show="currentWord?.audioSrc"
                 class="p-3 rounded-full hover:bg-purple-100 text-purple-600 transition-colors shadow-md"
-                title="Play term audio">
+                title="Reproducir audio del término">
                 <!-- Updated audio icon - play button style -->
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M8 5v14l11-7z" />
@@ -20,33 +20,34 @@
 
         <!-- Translation Section -->
         <div x-show="currentWord?.translation" class="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-500">
-            <h3 class="text-lg font-semibold text-purple-700 mb-2">Translation:</h3>
+            <h3 class="text-lg font-semibold text-purple-700 mb-2">Traducción:</h3>
             <p class="text-2xl text-purple-800 font-medium" x-text="currentWord?.translation"></p>
         </div>
         <p x-show="currentWord && !currentWord?.translation"
             class="text-gray-500 italic p-4 bg-gray-50 rounded-lg text-center">
-            No translation available.
+            No hay traducción disponible.
         </p>
 
         <!-- Definition Section -->
         <div x-show="currentWord?.definition" class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
-            <h3 class="text-lg font-semibold text-blue-700 mb-2">Definition:</h3>
+            <h3 class="text-lg font-semibold text-blue-700 mb-2">Definición:</h3>
             <p class="text-gray-700" x-text="currentWord?.definition"></p>
         </div>
         <p x-show="currentWord && !currentWord?.definition"
             class="text-gray-500 italic p-4 bg-gray-50 rounded-lg text-center">
-            No definition available.
+            No hay definición disponible.
         </p>
 
         <!-- Pronunciation Section -->
         <div x-show="currentWord?.pronunciation" class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
-            <h3 class="text-lg font-semibold text-green-700 mb-2">Pronunciation:</h3>
+            <h3 class="text-lg font-semibold text-green-700 mb-2">Pronunciación:</h3>
             <p class="text-gray-700 font-mono text-lg" x-text="currentWord?.pronunciation"></p>
         </div>
 
         <!-- Example Sentences Section -->
         <div x-show="currentWord?.exampleSentences && currentWord.exampleSentences.length > 0" class="space-y-4">
-            <h3 class="text-2xl font-semibold text-purple-700 mb-4 border-b-2 border-purple-200 pb-2">Example Sentences
+            <h3 class="text-2xl font-semibold text-purple-700 mb-4 border-b-2 border-purple-200 pb-2">Oraciones de
+                Ejemplo
             </h3>
             <div class="space-y-3">
                 <template x-for="(sentence, index) in currentWord.exampleSentences" :key="index">
@@ -59,7 +60,7 @@
                             </div>
                             <button @click="playAudio(sentence.audioSrc)" x-show="sentence.audioSrc"
                                 class="ml-3 p-2 rounded-full hover:bg-purple-200 text-purple-600 transition-colors flex-shrink-0 shadow-sm"
-                                title="Play sentence audio">
+                                title="Reproducir audio de la oración">
                                 <!-- Play button icon for sentences -->
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24"
                                     fill="currentColor">
@@ -73,23 +74,24 @@
         </div>
         <div x-show="currentWord && (!currentWord.exampleSentences || currentWord.exampleSentences.length === 0)"
             class="text-gray-500 italic p-6 bg-gray-50 rounded-lg text-center">
-            No example sentences available for this word.
+            No hay oraciones de ejemplo disponibles para esta palabra.
         </div>
 
         <!-- Conversations Section -->
         <div x-show="currentWord?.conversation && currentWord.conversation.length > 0" class="space-y-6">
-            <h3 class="text-2xl font-semibold text-purple-700 mb-4 border-b-2 border-purple-200 pb-2">Conversations</h3>
+            <h3 class="text-2xl font-semibold text-purple-700 mb-4 border-b-2 border-purple-200 pb-2">Conversaciones
+            </h3>
             <div class="space-y-6">
                 <template x-for="(convoBlock, convoIndex) in currentWord.conversation" :key="convoIndex">
                     <div
                         class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 shadow-lg border border-gray-200 max-w-4xl mx-auto">
                         <!-- Conversation header -->
                         <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-300">
-                            <h4 class="text-lg font-semibold text-gray-700" x-text="'Conversation ' + (convoIndex + 1)">
+                            <h4 class="text-lg font-semibold text-gray-700" x-text="'Conversación ' + (convoIndex + 1)">
                             </h4>
                             <div class="flex items-center space-x-2">
                                 <div class="w-3 h-3 bg-green-400 rounded-full"></div>
-                                <span class="text-sm text-gray-500">Active</span>
+                                <span class="text-sm text-gray-500">Activa</span>
                             </div>
                         </div>
 
@@ -110,7 +112,7 @@
                                         <div class="text-xs font-semibold mb-1 opacity-75" :class="{
                                         'text-blue-100': line.speaker === 'B' || line.speaker === 'person2' || line.speaker.toLowerCase().includes('2'),
                                         'text-gray-500': line.speaker === 'A' || line.speaker === 'person1' || line.speaker.toLowerCase().includes('1') || (!line.speaker.toLowerCase().includes('2'))
-                                    }" x-text="line.speaker === 'A' || line.speaker === 'person1' || line.speaker.toLowerCase().includes('1') ? 'Person 1' : 'Person 2'">
+                                    }" x-text="line.speaker === 'A' || line.speaker === 'person1' || line.speaker.toLowerCase().includes('1') ? 'Persona 1' : 'Persona 2'">
                                         </div>
 
                                         <!-- Message text -->
@@ -129,7 +131,7 @@
                                             :class="{
                                             'bg-blue-600 hover:bg-blue-700 text-white': line.speaker === 'B' || line.speaker === 'person2' || line.speaker.toLowerCase().includes('2'),
                                             'bg-gray-600 hover:bg-gray-700 text-white': line.speaker === 'A' || line.speaker === 'person1' || line.speaker.toLowerCase().includes('1') || (!line.speaker.toLowerCase().includes('2'))
-                                        }" title="Play audio">
+                                        }" title="Reproducir audio">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24"
                                                 fill="currentColor">
                                                 <path d="M8 5v14l11-7z" />
@@ -142,7 +144,7 @@
 
                         <!-- Conversation footer with message count -->
                         <div class="mt-4 pt-3 border-t border-gray-300 text-center">
-                            <span class="text-xs text-gray-500" x-text="convoBlock.lines.length + ' messages'"></span>
+                            <span class="text-xs text-gray-500" x-text="convoBlock.lines.length + ' mensajes'"></span>
                         </div>
                     </div>
                 </template>
@@ -150,12 +152,12 @@
         </div>
         <div x-show="currentWord && (!currentWord.conversation || currentWord.conversation.length === 0)"
             class="text-gray-500 italic p-6 bg-gray-50 rounded-lg text-center">
-            No example conversations available for this word.
+            No hay conversaciones de ejemplo disponibles para esta palabra.
         </div>
 
         <!-- Notes Section -->
         <div x-show="currentWord?.notes" class="mt-6 pt-6 border-t border-gray-200">
-            <h3 class="text-lg font-semibold text-purple-700 mb-3">Notes:</h3>
+            <h3 class="text-lg font-semibold text-purple-700 mb-3">Notas:</h3>
             <div class="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400">
                 <p class="text-gray-700 whitespace-pre-line" x-text="currentWord?.notes"></p>
             </div>
@@ -175,7 +177,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
         </svg>
-        <p>Select a word to see details.</p>
+        <p>Selecciona una palabra para ver los detalles.</p>
     </div>
 
     <div x-show="!isLoadingWordDetails && !currentWord && error"
@@ -185,6 +187,6 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
         </svg>
-        <p x-text="error || 'Could not load details for the selected word.'"></p>
+        <p x-text="error || 'No se pudieron cargar los detalles de la palabra seleccionada.'"></p>
     </div>
 </div>

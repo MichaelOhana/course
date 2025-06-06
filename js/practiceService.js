@@ -19,13 +19,13 @@ export function trackViewedWord(wordId) {
         console.log("Triggering mid-module practice.");
         this.midModulePracticeCompleted = true;
         const wordsForPractice = Array.from(this.viewedWordsInModule).slice(0, PRACTICE_TRIGGER_COUNT);
-        this.startPracticeSession(wordsForPractice, `Practice: First ${PRACTICE_TRIGGER_COUNT} Words`);
+        this.startPracticeSession(wordsForPractice, `Práctica: Primeras ${PRACTICE_TRIGGER_COUNT} Palabras`);
     }
     // End-of-module practice trigger
     else if (this.viewedWordsInModule.size === totalWordsInModule && !this.endModulePracticeCompleted) {
         console.log("Triggering end-of-module practice.");
         this.endModulePracticeCompleted = true;
-        this.startPracticeSession(Array.from(this.viewedWordsInModule), "Practice: All Module Words");
+        this.startPracticeSession(Array.from(this.viewedWordsInModule), "Práctica: Todas las Palabras del Módulo");
     }
 }
 
@@ -103,7 +103,7 @@ export async function startPracticeSession(wordIdsForPractice, title) {
             }));
         } catch (e) {
             console.error("Error parsing conversation_json:", e, ex.questionTextJson);
-            conversationLines = [{ speaker: "Error", line: "Could not load conversation." }];
+            conversationLines = [{ speaker: "Error", line: "No se pudo cargar la conversación." }];
         }
         this.practiceExercises.push({
             ...ex,
@@ -120,7 +120,7 @@ export async function startPracticeSession(wordIdsForPractice, title) {
         this.currentExerciseIndex = 0;
         this.displayCurrentExercise();
     } else {
-        this.practiceCompletionMessage = "No practice exercises found for this set of words.";
+        this.practiceCompletionMessage = "No se encontraron ejercicios de práctica para este conjunto de palabras.";
         this.currentExercise = null; // Ensure no exercise is displayed
     }
     this.isLoadingPractice = false;
@@ -134,7 +134,7 @@ export function displayCurrentExercise() {
         console.log("Displaying exercise:", this.currentExerciseIndex + 1, this.currentExercise);
     } else {
         this.currentExercise = null;
-        this.practiceCompletionMessage = this.practiceExercises.length > 0 ? "Practice session completed! Well done." : "No exercises were available for this session.";
+        this.practiceCompletionMessage = this.practiceExercises.length > 0 ? "¡Sesión de práctica completada! Bien hecho." : "No había ejercicios disponibles para esta sesión.";
         console.log("Practice session ended or no exercises.");
     }
 }
@@ -148,9 +148,9 @@ export function selectAnswer(option) {
 export function submitAnswer() {
     if (!this.userAnswer || !this.currentExercise) return;
     if (this.userAnswer === this.currentExercise.correctAnswerTerm) {
-        this.feedbackMessage = { type: 'success', text: 'Good job!' };
+        this.feedbackMessage = { type: 'success', text: '¡Bien hecho!' };
     } else {
-        this.feedbackMessage = { type: 'error', text: `The correct answer was ${this.currentExercise.correctAnswerTerm}` };
+        this.feedbackMessage = { type: 'error', text: `La respuesta correcta era ${this.currentExercise.correctAnswerTerm}` };
     }
 }
 

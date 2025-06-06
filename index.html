@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Language Learning App</title>
+    <title>Aplicación de Aprendizaje de Idiomas</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
     <!-- Load our main script first -->
@@ -26,7 +26,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
             <!-- Menu Text -->
-            <span class="text-sm font-medium">Menu</span>
+            <span class="text-sm font-medium">Menú</span>
         </button>
 
         <!-- Desktop Menu Button (visible only on desktop when menu is closed) -->
@@ -38,7 +38,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
             <!-- Menu Text -->
-            <span class="text-sm font-medium">Open Menu</span>
+            <span class="text-sm font-medium">Abrir Menú</span>
         </button>
 
         <!-- Mobile Menu Overlay (visible only on mobile when menu is open) -->
@@ -73,15 +73,16 @@
                 </svg>
             </button>
 
-            <h2 class="text-2xl font-bold text-purple-700 mb-5 border-b pb-2 pr-8">Course Modules</h2>
+            <h2 class="text-2xl font-bold text-purple-700 mb-5 border-b pb-2 pr-8">Módulos del Curso</h2>
             <ul id="word-navigation-list" class="space-y-1">
                 <!-- Module items will be dynamically populated here by js/main.js -->
-                <li x-show="isLoading" class="text-gray-500">Loading course content...</li>
-                <li x-show="!isLoading && allWordsFlat.length === 0" class="text-gray-500">No modules available.</li>
+                <li x-show="isLoading" class="text-gray-500">Cargando contenido del curso...</li>
+                <li x-show="!isLoading && allWordsFlat.length === 0" class="text-gray-500">No hay módulos disponibles.
+                </li>
             </ul>
             <button @click="initiatePractice(allWordsFlat)" x-show="!isLoading && allWordsFlat.length > 0"
                 class="mt-6 w-full px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-colors shadow-md">
-                Practice All Words
+                Practicar Todas las Palabras
             </button>
         </nav>
 
@@ -90,8 +91,8 @@
             :class="{ 'ml-0': !isMobileMenuOpen }">
             <!-- Views (word-detail.html, practice.html) will be loaded here -->
             <div x-show="isLoading" class="text-center py-20">
-                <h1 class="text-3xl font-bold text-purple-700 mb-4">Loading...</h1>
-                <p class="text-lg text-gray-600">Please wait while we load your course content.</p>
+                <h1 class="text-3xl font-bold text-purple-700 mb-4">Cargando...</h1>
+                <p class="text-lg text-gray-600">Por favor espera mientras cargamos el contenido de tu curso.</p>
             </div>
             <!-- Container for loaded views -->
             <div id="view-container" x-show="!isLoading">

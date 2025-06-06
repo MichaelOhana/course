@@ -198,8 +198,8 @@ function createAppStateComponent() {
                         if (word.module_id && !moduleMap.has(word.module_id)) {
                             moduleMap.set(word.module_id, {
                                 id: word.module_id,
-                                name: word.module_name || `Module ${word.module_id}`,
-                                description: word.module_description || `Module containing words`
+                                name: word.module_name || `Módulo ${word.module_id}`,
+                                description: word.module_description || `Módulo que contiene palabras`
                             });
                         }
                     });
@@ -211,7 +211,7 @@ function createAppStateComponent() {
                 this.populateWordNavigation();
             } catch (err) {
                 console.error('[appState] loadAllWordsForNavigation() error:', err);
-                this.error = 'Failed to load words for navigation';
+                this.error = 'Error al cargar las palabras para la navegación';
 
                 // Fallback: try to show modules without words if modules are loaded
                 if (this.modules && this.modules.length > 0) {
@@ -297,7 +297,7 @@ function createAppStateComponent() {
                 words.forEach((word, index) => {
                     const wordItem = document.createElement('div');
                     wordItem.className = 'cursor-pointer p-2 rounded hover:bg-purple-100 transition-colors text-sm border-l-2 border-purple-200 pl-3';
-                    wordItem.textContent = word.term || 'Unknown word';
+                    wordItem.textContent = word.term || 'Palabra desconocida';
                     wordItem.addEventListener('click', (e) => {
                         e.stopPropagation();
                         this.selectWordFromNav(word.id);
@@ -311,11 +311,11 @@ function createAppStateComponent() {
 
                         const practiceFirst5Button = document.createElement('button');
                         practiceFirst5Button.className = 'w-full text-left px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors border border-blue-300 font-medium';
-                        practiceFirst5Button.textContent = '📝 Practice First 5 Words';
+                        practiceFirst5Button.textContent = '📝 Practicar Primeras 5 Palabras';
                         practiceFirst5Button.addEventListener('click', (e) => {
                             e.stopPropagation();
                             const first5WordIds = words.slice(0, 5).map(w => w.id);
-                            this.startPracticeSession(first5WordIds, `Practice: First 5 Words - ${moduleName}`);
+                            this.startPracticeSession(first5WordIds, `Práctica: Primeras 5 Palabras - ${moduleName}`);
                         });
 
                         practiceFirst5Container.appendChild(practiceFirst5Button);
@@ -330,7 +330,7 @@ function createAppStateComponent() {
                 const moduleWords = words;
                 const wordIds = moduleWords.map(word => word.id);
                 const module = this.modules.find(m => m.id == moduleId);
-                const moduleName = module ? module.name : `Module ${moduleId}`;
+                const moduleName = module ? module.name : `Módulo ${moduleId}`;
 
                 // Second practice section - Practice remaining words (after first 5)
                 if (words.length > 5) {
@@ -340,11 +340,11 @@ function createAppStateComponent() {
                     const practiceRemainingButton = document.createElement('button');
                     practiceRemainingButton.className = 'w-full text-left px-2 py-1 text-xs text-orange-600 rounded hover:bg-orange-50 transition-colors border-0 font-normal';
                     const remainingCount = words.length - 5;
-                    practiceRemainingButton.textContent = `🎯 Practice Remaining ${remainingCount} Words`;
+                    practiceRemainingButton.textContent = `🎯 Practicar ${remainingCount} Palabras Restantes`;
                     practiceRemainingButton.addEventListener('click', (e) => {
                         e.stopPropagation();
                         const remainingWordIds = wordIds.slice(5);
-                        this.startPracticeSession(remainingWordIds, `Practice: Remaining ${remainingCount} Words - ${moduleName}`);
+                        this.startPracticeSession(remainingWordIds, `Práctica: ${remainingCount} Palabras Restantes - ${moduleName}`);
                     });
 
                     practiceRemainingContainer.appendChild(practiceRemainingButton);
@@ -357,10 +357,10 @@ function createAppStateComponent() {
 
                 const practiceAllButton = document.createElement('button');
                 practiceAllButton.className = 'w-full text-left px-2 py-1 text-xs text-green-600 rounded hover:bg-green-50 transition-colors border-0 font-normal';
-                practiceAllButton.textContent = `📚 Practice All ${words.length} Words`;
+                practiceAllButton.textContent = `📚 Practicar Todas las ${words.length} Palabras`;
                 practiceAllButton.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    this.startPracticeSession(wordIds, `Practice: All Words - ${moduleName}`);
+                    this.startPracticeSession(wordIds, `Práctica: Todas las Palabras - ${moduleName}`);
                 });
 
                 practiceAllContainer.appendChild(practiceAllButton);
@@ -371,7 +371,7 @@ function createAppStateComponent() {
                 console.log(`[appState] Loaded ${words.length} words for module ${moduleId}`);
             } catch (err) {
                 console.error(`[appState] Error loading words for module ${moduleId}:`, err);
-                container.innerHTML = '<div class="text-red-500 text-xs p-2">Error loading words</div>';
+                container.innerHTML = '<div class="text-red-500 text-xs p-2">Error al cargar las palabras</div>';
             }
         },
 
@@ -409,7 +409,7 @@ function createAppStateComponent() {
             // Create navigation items with collapsible modules
             Object.keys(wordsByModule).forEach(moduleId => {
                 const module = this.modules.find(m => m.id == moduleId);
-                const moduleName = module ? module.name : `Module ${moduleId}`;
+                const moduleName = module ? module.name : `Módulo ${moduleId}`;
                 const moduleDescription = module ? module.description : '';
 
                 // Create module header (clickable to expand/collapse)
@@ -434,7 +434,7 @@ function createAppStateComponent() {
                 wordsByModule[moduleId].forEach((word, index) => {
                     const wordItem = document.createElement('div');
                     wordItem.className = 'cursor-pointer p-2 rounded hover:bg-purple-100 transition-colors text-sm border-l-2 border-purple-200 pl-3';
-                    wordItem.textContent = word.term || 'Unknown word';
+                    wordItem.textContent = word.term || 'Palabra desconocida';
                     wordItem.addEventListener('click', (e) => {
                         e.stopPropagation();
                         this.selectWordFromNav(word.id);
@@ -448,11 +448,11 @@ function createAppStateComponent() {
 
                         const practiceFirst5Button = document.createElement('button');
                         practiceFirst5Button.className = 'w-full text-left px-2 py-1 text-xs text-blue-600 rounded hover:bg-blue-50 transition-colors border-0 font-normal';
-                        practiceFirst5Button.textContent = '📝 Practice First 5 Words';
+                        practiceFirst5Button.textContent = '📝 Practicar Primeras 5 Palabras';
                         practiceFirst5Button.addEventListener('click', (e) => {
                             e.stopPropagation();
                             const first5WordIds = wordsByModule[moduleId].slice(0, 5).map(w => w.id);
-                            this.startPracticeSession(first5WordIds, `Practice: First 5 Words - ${moduleName}`);
+                            this.startPracticeSession(first5WordIds, `Práctica: Primeras 5 Palabras - ${moduleName}`);
                         });
 
                         practiceFirst5Container.appendChild(practiceFirst5Button);
@@ -475,11 +475,11 @@ function createAppStateComponent() {
                     const practiceRemainingButton = document.createElement('button');
                     practiceRemainingButton.className = 'w-full text-left px-2 py-1 text-xs text-orange-600 rounded hover:bg-orange-50 transition-colors border-0 font-normal';
                     const remainingCount = moduleWords.length - 5;
-                    practiceRemainingButton.textContent = `🎯 Practice Remaining ${remainingCount} Words`;
+                    practiceRemainingButton.textContent = `🎯 Practicar ${remainingCount} Palabras Restantes`;
                     practiceRemainingButton.addEventListener('click', (e) => {
                         e.stopPropagation();
                         const remainingWordIds = wordIds.slice(5);
-                        this.startPracticeSession(remainingWordIds, `Practice: Remaining ${remainingCount} Words - ${moduleName}`);
+                        this.startPracticeSession(remainingWordIds, `Práctica: ${remainingCount} Palabras Restantes - ${moduleName}`);
                     });
 
                     practiceRemainingContainer.appendChild(practiceRemainingButton);
@@ -492,10 +492,10 @@ function createAppStateComponent() {
 
                 const practiceAllButton = document.createElement('button');
                 practiceAllButton.className = 'w-full text-left px-2 py-1 text-xs text-green-600 rounded hover:bg-green-50 transition-colors border-0 font-normal';
-                practiceAllButton.textContent = `📚 Practice All ${moduleWords.length} Words`;
+                practiceAllButton.textContent = `📚 Practicar Todas las ${moduleWords.length} Palabras`;
                 practiceAllButton.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    this.startPracticeSession(wordIds, `Practice: All Words - ${moduleName}`);
+                    this.startPracticeSession(wordIds, `Práctica: Todas las Palabras - ${moduleName}`);
                 });
 
                 practiceAllContainer.appendChild(practiceAllButton);
@@ -542,18 +542,18 @@ function createAppStateComponent() {
                 viewContainer.innerHTML = `
                     <div class="pt-16 md:pt-0">
                         <div class="text-center py-20">
-                            <h1 class="text-3xl font-bold text-purple-700 mb-4">Language Learning Course</h1>
-                            <p class="text-lg text-gray-600 mb-6">Select a module from the navigation panel to begin learning.</p>
+                            <h1 class="text-3xl font-bold text-purple-700 mb-4">Curso de Aprendizaje de Idiomas</h1>
+                            <p class="text-lg text-gray-600 mb-6">Selecciona un módulo del panel de navegación para comenzar a aprender.</p>
                             <div class="bg-white p-8 rounded-lg shadow-md max-w-2xl mx-auto">
-                                <h2 class="text-xl font-semibold text-purple-600 mb-4">How to Use This Course</h2>
+                                <h2 class="text-xl font-semibold text-purple-600 mb-4">Cómo Usar Este Curso</h2>
                                 <div class="text-left space-y-3 text-gray-700">
-                                    <p>• <strong>Browse Modules:</strong> Click on any module in the left panel to expand and see its words</p>
-                                    <p>• <strong>Study Words:</strong> Click on individual words to view detailed information, examples, and audio</p>
-                                    <p>• <strong>Practice Sessions:</strong> Each module has strategically placed practice options:</p>
-                                    <p class="ml-6">📝 <strong>Practice First 5 Words</strong> - Appears after the 5th word</p>
-                                    <p class="ml-6">🎯 <strong>Practice Remaining Words</strong> - Appears at the end for words 6+</p>
-                                    <p class="ml-6">📚 <strong>Practice All Words</strong> - Complete module review at the end</p>
-                                    <p>• <strong>Exercise Types:</strong> Practice includes fill-in-the-blank sentences and conversations</p>
+                                    <p>• <strong>Explorar Módulos:</strong> Haz clic en cualquier módulo en el panel izquierdo para expandir y ver sus palabras</p>
+                                    <p>• <strong>Estudiar Palabras:</strong> Haz clic en palabras individuales para ver información detallada, ejemplos y audio</p>
+                                    <p>• <strong>Sesiones de Práctica:</strong> Cada módulo tiene opciones de práctica estratégicamente ubicadas:</p>
+                                    <p class="ml-6">📝 <strong>Practicar Primeras 5 Palabras</strong> - Aparece después de la 5ª palabra</p>
+                                    <p class="ml-6">🎯 <strong>Practicar Palabras Restantes</strong> - Aparece al final para las palabras 6+</p>
+                                    <p class="ml-6">📚 <strong>Practicar Todas las Palabras</strong> - Revisión completa del módulo al final</p>
+                                    <p>• <strong>Tipos de Ejercicios:</strong> La práctica incluye completar oraciones y conversaciones</p>
                                 </div>
                             </div>
                         </div>
@@ -626,7 +626,7 @@ function createAppStateComponent() {
 
         async loadWordDetailsById(wordId) {
             if (!this.db || !wordId) {
-                this.error = "Database not available or no word ID provided.";
+                this.error = "La base de datos no está disponible o no se proporcionó ID de palabra.";
                 return;
             }
 
@@ -776,26 +776,40 @@ function createAppStateComponent() {
 
                     // Load clips
                     try {
+                        console.log('[appState] Loading clips for word ID:', wordId);
                         const clipsQuery = 'SELECT * FROM clips WHERE word_id = ?';
                         const clips = this.executeQuery(clipsQuery, [wordId]) || [];
                         console.log('[appState] Clips query result for word', wordId, ':', clips);
+                        console.log('[appState] Number of clips found:', clips.length);
+
+                        if (clips.length > 0) {
+                            clips.forEach((clip, index) => {
+                                console.log(`[appState] Clip ${index + 1}:`, {
+                                    id: clip.id,
+                                    youtube_url: clip.youtube_url,
+                                    start_sec: clip.start_sec
+                                });
+                            });
+                        }
+
                         this.selectedWordClips = clips;
                         this.currentWord.clips = clips;
                         console.log('[appState] Clips assigned to currentWord:', this.currentWord.clips);
                     } catch (err) {
                         console.warn('[appState] Clips table not available or error loading clips:', err);
+                        console.warn('[appState] Error details:', err.message);
                         this.selectedWordClips = [];
                         this.currentWord.clips = [];
                     }
 
                     console.log('[appState] Word details loaded for:', wordId, this.currentWord);
                 } else {
-                    this.error = `Word with ID ${wordId} not found.`;
+                    this.error = `Palabra con ID ${wordId} no encontrada.`;
                     this.currentWord = null;
                 }
             } catch (err) {
                 console.error('[appState] loadWordDetailsById() error:', err);
-                this.error = 'Failed to load word details';
+                this.error = 'Error al cargar los detalles de la palabra';
                 this.currentWord = null;
             }
         },
@@ -813,7 +827,6 @@ function createAppStateComponent() {
             this.currentWord = null;
         },
 
-
         initiatePractice(words) {
             if (!Array.isArray(words) || words.length === 0) return;
 
@@ -828,7 +841,7 @@ function createAppStateComponent() {
             }
 
             // Start practice session with all words
-            this.startPracticeSession(wordIds, `Practice: All ${wordIds.length} Words`);
+            this.startPracticeSession(wordIds, `Práctica: Todas las ${wordIds.length} Palabras`);
         },
 
         renderYouTubeClips(clips, containerId) {

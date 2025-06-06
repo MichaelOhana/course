@@ -68,7 +68,7 @@ export function renderYouTubeClips(clips, containerId) {
         return `
                         <div class="relative rounded-lg overflow-hidden shadow-md bg-black" style="padding-bottom: 56.25%;">
                             <iframe class="absolute top-0 left-0 w-full h-full"
-                                src="https://www.youtube.com/embed/${videoId}?start=${clip.start_sec}"
+                                src="https://www.youtube-nocookie.com/embed/${videoId}?start=${clip.start_sec || 0}&rel=0&modestbranding=1"
                                 frameborder="0"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowfullscreen>
